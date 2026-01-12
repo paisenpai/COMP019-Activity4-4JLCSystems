@@ -1,0 +1,145 @@
+@model COMP019_Activity4_4JLCSystems.Models.ViewModels.OrderListViewModel
+@{
+    ViewData["Title"] = "Orders";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-receipt me-2"></i>Orders</h1>
+    <a asp-controller="Products" asp-action="Index" class="btn btn-primary">
+        <i class="bi bi-cart-plus me-1"></i>New Order
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <input type="text" name="search" class="form-control" placeholder="Order # or Customer name" value="@Model.SearchTerm">
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="Pending" selected="@(Model.StatusFilter == "Pending")">Pending</option>
+                    <option value="Paid" selected="@(Model.StatusFilter == "Paid")">Paid</option>
+                    <option value="Shipped" selected="@(Model.StatusFilter == "Shipped")">Shipped</option>
+                    <option value="Delivered" selected="@(Model.StatusFilter == "Delivered")">Delivered</option>
+                    <option value="Cancelled" selected="@(Model.StatusFilter == "Cancelled")">Cancelled</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="startDate" class="form-control" value="@Model.StartDate?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="endDate" class="form-control" value="@Model.EndDate?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Order #</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th class="text-end">Subtotal</th>
+                    <th class="text-end">Shipping</th>
+                    <th class="text-end">Total</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Orders.Any())
+                {
+                    @foreach (var order in Model.Orders)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@order.OrderId" class="fw-bold text-decoration-none">
+                                    @order.OrderNumber.Substring(0, Math.Min(20, order.OrderNumber.Length))...
+                                </a>
+                            </td>
+                            <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                            <td>@(order.CustomerName ?? "N/A")</td>
+                            <td class="text-end">&#8369;@order.Subtotal.ToString("N2")</td>
+                            <td class="text-end">&#8369;@order.ShippingFee.ToString("N2")</td>
+                            <td class="text-end"><strong>&#8369;@order.TotalAmount.ToString("N2")</strong></td>
+                            <td class="text-center">
+                                @{
+                                    var statusClass = order.OrderStatus switch
+                                    {
+                                        "Pending" => "bg-warning text-dark",
+                                        "Paid" => "bg-info",
+                                        "Shipped" => "bg-primary",
+                                        "Delivered" => "bg-success",
+                                        "Cancelled" => "bg-secondary",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @statusClass">@order.OrderStatus</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@order.OrderId" class="btn btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    @if (order.OrderStatus == "Pending")
+                                    {
+                                        <a asp-action="ProcessPayment" asp-route-id="@order.OrderId" class="btn btn-outline-success" title="Process Payment">
+                                            <i class="bi bi-credit-card"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                            No orders found
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer bg-white">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage - 1)" 
+                           asp-route-status="@Model.StatusFilter" asp-route-search="@Model.SearchTerm">Previous</a>
+                    </li>
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@i" 
+                               asp-route-status="@Model.StatusFilter" asp-route-search="@Model.SearchTerm">@i</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage + 1)" 
+                           asp-route-status="@Model.StatusFilter" asp-route-search="@Model.SearchTerm">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

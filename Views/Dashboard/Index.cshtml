@@ -1,0 +1,304 @@
+@model COMP019_Activity4_4JLCSystems.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h1>
+    <span class="text-muted">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</span>
+</div>
+
+<!-- Main Statistics Cards -->
+<div class="row g-4 mb-4">
+    <!-- Total Sales -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card border-0 shadow-sm bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-white-50 mb-1">Total Sales</h6>
+                        <h3 class="mb-0">&#8369;@Model.TotalSales.ToString("N2")</h3>
+                        <small class="text-white-50">This month: &#8369;@Model.SalesThisMonth.ToString("N2")</small>
+                    </div>
+                    <i class="bi bi-graph-up-arrow icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Orders -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card border-0 shadow-sm bg-warning text-dark h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">Pending Orders</h6>
+                        <h3 class="mb-0">@Model.PendingOrders</h3>
+                        <small>Total orders: @Model.TotalOrders</small>
+                    </div>
+                    <i class="bi bi-clock-history icon"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a asp-controller="Orders" asp-action="Pending" class="text-dark text-decoration-none small">
+                    View pending <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Profit -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card border-0 shadow-sm bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-white-50 mb-1">Total Profit</h6>
+                        <h3 class="mb-0">&#8369;@Model.TotalProfit.ToString("N2")</h3>
+                        <small class="text-white-50">Profit = Sales - Cost - Shipping</small>
+                    </div>
+                    <i class="bi bi-currency-dollar icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Shipments -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card border-0 shadow-sm bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-white-50 mb-1">Total Shipments</h6>
+                        <h3 class="mb-0">@Model.TotalShipments</h3>
+                        <small class="text-white-50">Pending: @Model.PendingShipments</small>
+                    </div>
+                    <i class="bi bi-truck icon"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a asp-controller="Shipments" asp-action="Index" class="text-white text-decoration-none small">
+                    View all <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Statistics -->
+<div class="row g-4 mb-4">
+    <!-- Inventory Overview -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="bi bi-boxes me-2"></i>Inventory Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h4 class="text-primary">@Model.TotalProducts</h4>
+                        <small class="text-muted">Products</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-warning">@Model.LowStockItems</h4>
+                        <small class="text-muted">Low Stock</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-danger">@Model.OutOfStockItems</h4>
+                        <small class="text-muted">Out of Stock</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Total Inventory Value:</span>
+                    <strong>&#8369;@Model.TotalInventoryValue.ToString("N2")</strong>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0">
+                <a asp-controller="Inventory" asp-action="Index" class="btn btn-outline-primary btn-sm w-100">
+                    Manage Inventory
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Status Breakdown -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Order Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Pending</span>
+                        <span class="badge bg-warning">@Model.PendingOrders</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-warning" style="width: @(Model.TotalOrders > 0 ? (Model.PendingOrders * 100 / Model.TotalOrders) : 0)%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Paid</span>
+                        <span class="badge bg-info">@Model.PaidOrders</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" style="width: @(Model.TotalOrders > 0 ? (Model.PaidOrders * 100 / Model.TotalOrders) : 0)%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Shipped</span>
+                        <span class="badge bg-primary">@Model.ShippedOrders</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-primary" style="width: @(Model.TotalOrders > 0 ? (Model.ShippedOrders * 100 / Model.TotalOrders) : 0)%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Delivered</span>
+                        <span class="badge bg-success">@Model.DeliveredOrders</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: @(Model.TotalOrders > 0 ? (Model.DeliveredOrders * 100 / Model.TotalOrders) : 0)%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profit Breakdown -->
+    <div class="col-md-12 col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Profit Calculation</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <td>Total Sales Revenue</td>
+                        <td class="text-end text-success">+ &#8369;@Model.TotalSales.ToString("N2")</td>
+                    </tr>
+                    <tr>
+                        <td>Item Costs</td>
+                        <td class="text-end text-danger">- &#8369;@Model.TotalItemCosts.ToString("N2")</td>
+                    </tr>
+                    <tr>
+                        <td>Shipping Fees</td>
+                        <td class="text-end text-danger">- &#8369;@Model.TotalShippingFeesDeducted.ToString("N2")</td>
+                    </tr>
+                    <tr class="table-active">
+                        <td><strong>Net Profit</strong></td>
+                        <td class="text-end"><strong class="@(Model.TotalProfit >= 0 ? "text-success" : "text-danger")">&#8369;@Model.TotalProfit.ToString("N2")</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent Orders -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Recent Orders</h5>
+                <a asp-controller="Orders" asp-action="Index" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.RecentOrders.Any())
+                            {
+                                foreach (var order in Model.RecentOrders)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a asp-controller="Orders" asp-action="Details" asp-route-id="@order.OrderId">
+                                                @order.OrderNumber.Substring(0, Math.Min(15, order.OrderNumber.Length))...
+                                            </a>
+                                        </td>
+                                        <td>@(order.CustomerName ?? "N/A")</td>
+                                        <td>&#8369;@order.TotalAmount.ToString("N2")</td>
+                                        <td>
+                                            <span class="badge badge-status @(order.Status == "Pending" ? "bg-warning" : order.Status == "Paid" ? "bg-info" : order.Status == "Shipped" ? "bg-primary" : order.Status == "Delivered" ? "bg-success" : "bg-secondary")">
+                                                @order.Status
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">No orders yet</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alert -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Low Stock Alert</h5>
+                <a asp-controller="Inventory" asp-action="LowStock" class="btn btn-sm btn-outline-warning">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>Code</th>
+                                <th>Stock</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.LowStockProducts.Any())
+                            {
+                                foreach (var item in Model.LowStockProducts)
+                                {
+                                    <tr>
+                                        <td>@item.ProductName</td>
+                                        <td><code>@item.ItemCode</code></td>
+                                        <td>@item.QuantityInStock / @item.ReorderLevel</td>
+                                        <td>
+                                            <span class="badge badge-status @(item.StockStatus == "Out of Stock" ? "bg-danger" : "bg-warning")">
+                                                @item.StockStatus
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        <i class="bi bi-check-circle text-success me-2"></i>All products are well stocked!
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

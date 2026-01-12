@@ -1,0 +1,79 @@
+@model COMP019_Activity4_4JLCSystems.Models.ViewModels.ProcessPaymentViewModel
+@{
+    ViewData["Title"] = "Process Payment";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-credit-card me-2"></i>Process Payment</h1>
+    <a asp-action="Details" asp-route-id="@Model.OrderId" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Order
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Payment for Order: <code>@Model.OrderNumber</code></h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h4 class="alert-heading">Total Amount Due</h4>
+                    <p class="display-5 mb-0">&#8369;@Model.TotalAmount.ToString("N2")</p>
+                </div>
+                
+                <form asp-action="ProcessPayment" method="post">
+                    <input type="hidden" asp-for="OrderId" />
+                    <input type="hidden" asp-for="OrderNumber" />
+                    <input type="hidden" asp-for="TotalAmount" />
+                    
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="PaymentMethod" class="form-label"></label>
+                        <select asp-for="PaymentMethod" class="form-select">
+                            <option value="">-- Select Payment Method --</option>
+                            <option value="Cash">Cash</option>
+                            <option value="GCash">GCash</option>
+                            <option value="Maya">Maya</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="COD">Cash on Delivery</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="PaymentNotes" class="form-label"></label>
+                        <textarea asp-for="PaymentNotes" class="form-control" rows="2" placeholder="Any payment notes (optional)"></textarea>
+                        <span asp-validation-for="PaymentNotes" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Upon payment confirmation:
+                        <ul class="mb-0 mt-2">
+                            <li>Order status will change to <strong>Paid</strong></li>
+                            <li>This sale will be recorded in <strong>Cash Flow</strong></li>
+                            <li>Profit will be calculated and added to totals</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-lg me-1"></i>Confirm Payment Received
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.OrderId" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

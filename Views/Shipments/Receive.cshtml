@@ -1,0 +1,114 @@
+@model COMP019_Activity4_4JLCSystems.Models.ViewModels.ReceiveShipmentViewModel
+@{
+    ViewData["Title"] = "Receive Shipment";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-box-arrow-in-down me-2"></i>Receive Shipment Items</h1>
+    <a asp-action="Details" asp-route-id="@Model.ShipmentId" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Shipment
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Shipment: <code>@Model.ShipmentNumber</code></h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            Select items that have been received. Received items will be automatically added to inventory.
+        </div>
+        
+        <form asp-action="Receive" method="post">
+            <input type="hidden" asp-for="ShipmentId" />
+            <input type="hidden" asp-for="ShipmentNumber" />
+            
+            <table class="table">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 50px;">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="selectAll" onclick="toggleAll(this)">
+                            </div>
+                        </th>
+                        <th>Item</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-center">Current Status</th>
+                        <th>Options</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Items.Count; i++)
+                    {
+                        var item = Model.Items[i];
+                        <tr class="@(item.IsReceived ? "table-success" : "")">
+                            <td>
+                                <input type="hidden" name="Items[@i].ShipmentItemId" value="@item.ShipmentItemId" />
+                                <input type="hidden" name="Items[@i].ItemName" value="@item.ItemName" />
+                                <input type="hidden" name="Items[@i].ItemCode" value="@item.ItemCode" />
+                                <input type="hidden" name="Items[@i].Quantity" value="@item.Quantity" />
+                                <input type="hidden" name="Items[@i].IsReceived" value="@item.IsReceived" />
+                                
+                                @if (!item.IsReceived)
+                                {
+                                    <div class="form-check">
+                                        <input type="checkbox" name="Items[@i].MarkAsReceived" value="true" class="form-check-input item-check" checked>
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <strong>@item.ItemName</strong>
+                                <br><code>@item.ItemCode</code>
+                            </td>
+                            <td class="text-center">@item.Quantity</td>
+                            <td class="text-center">
+                                @if (item.IsReceived)
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-check"></i> Already Received</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!item.IsReceived)
+                                {
+                                    <div class="form-check">
+                                        <input type="checkbox" name="Items[@i].CreateNewProduct" value="true" class="form-check-input" id="createNew_@i">
+                                        <label class="form-check-label" for="createNew_@i">Create as new product</label>
+                                    </div>
+                                    <div class="mt-2">
+                                        <label class="form-label small">Selling Price (if new product):</label>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">&#8369;</span>
+                                            <input type="number" name="Items[@i].SellingPrice" class="form-control" step="0.01" min="0" placeholder="Optional">
+                                        </div>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            
+            <div class="d-flex justify-content-between">
+                <a asp-action="Details" asp-route-id="@Model.ShipmentId" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg me-1"></i>Receive Selected Items
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleAll(source) {
+            document.querySelectorAll('.item-check').forEach(cb => {
+                cb.checked = source.checked;
+            });
+        }
+    </script>
+}

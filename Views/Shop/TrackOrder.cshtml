@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Track Order";
+    Layout = "_ShopLayout";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-search display-4 mb-3" style="color: var(--primary-red);"></i>
+                <h3 class="mb-4">Track Your Order</h3>
+                
+                <form method="post" action="/track">
+                    <div class="mb-3">
+                        <input type="text" name="orderNumber" class="form-control form-control-lg text-center" 
+                               placeholder="Enter Order Number (e.g., ORD-20240115-123456)" required>
+                    </div>
+                    
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <p class="mb-0">@error.ErrorMessage</p>
+                            }
+                        </div>
+                    }
+                    
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-search me-1"></i>Track Order
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,152 @@
+@model COMP019_Activity4_4JLCSystems.Models.ViewModels.ProductDisplayViewModel
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-box me-2"></i>Product Details</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Products
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <img src="@Model.ImageUrl" alt="@Model.ProductName" class="img-fluid rounded">
+                        }
+                        else
+                        {
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-8">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h3>@Model.ProductName</h3>
+                                <p class="text-muted mb-2">
+                                    <code class="me-2">@Model.ItemCode</code>
+                                    @if (!string.IsNullOrEmpty(Model.Brand))
+                                    {
+                                        <span class="badge bg-secondary">@Model.Brand</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.Category))
+                                    {
+                                        <span class="badge bg-info">@Model.Category</span>
+                                    }
+                                </p>
+                            </div>
+                            <span class="badge fs-6 @(Model.IsOutOfStock ? "bg-danger" : Model.IsLowStock ? "bg-warning" : "bg-success")">
+                                @Model.StockStatus
+                            </span>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <p class="mt-3">@Model.Description</p>
+                        }
+                        
+                        <hr>
+                        
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <small class="text-muted d-block">Cost Price</small>
+                                <h5 class="text-danger">&#8369;@Model.CostPrice.ToString("N2")</h5>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Selling Price</small>
+                                <h5 class="text-success">&#8369;@Model.SellingPrice.ToString("N2")</h5>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Profit Margin</small>
+                                <h5 class="text-primary">&#8369;@Model.ProfitMargin.ToString("N2")</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-primary">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                </a>
+                <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
+                    <input type="hidden" name="ProductId" value="@Model.ProductId" />
+                    <input type="hidden" name="Quantity" value="1" />
+                    <button type="submit" class="btn btn-success" @(Model.IsOutOfStock ? "disabled" : "")>
+                        <i class="bi bi-cart-plus me-1"></i>Add to Cart
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-boxes me-2"></i>Inventory Info</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <td>In Stock:</td>
+                        <td class="text-end"><strong>@Model.QuantityInStock units</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Reorder Level:</td>
+                        <td class="text-end">@Model.ReorderLevel units</td>
+                    </tr>
+                    <tr>
+                        <td>Status:</td>
+                        <td class="text-end">
+                            <span class="badge @(Model.IsOutOfStock ? "bg-danger" : Model.IsLowStock ? "bg-warning" : "bg-success")">
+                                @Model.StockStatus
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Stock Value:</td>
+                        <td class="text-end">?@((Model.SellingPrice * Model.QuantityInStock).ToString("N2"))</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Additional Info</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <td>Date Added:</td>
+                        <td class="text-end">@Model.DateAdded.ToString("MMM dd, yyyy")</td>
+                    </tr>
+                    <tr>
+                        <td>Profit %:</td>
+                        <td class="text-end">@Model.ProfitPercentage.ToString("N1")%</td>
+                    </tr>
+                    <tr>
+                        <td>Active:</td>
+                        <td class="text-end">
+                            @if (Model.IsActive)
+                            {
+                                <span class="text-success"><i class="bi bi-check-circle"></i> Yes</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger"><i class="bi bi-x-circle"></i> No</span>
+                            }
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

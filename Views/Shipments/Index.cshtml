@@ -1,0 +1,118 @@
+@model COMP019_Activity4_4JLCSystems.Models.ViewModels.ShipmentListViewModel
+@{
+    ViewData["Title"] = "Shipments";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-truck me-2"></i>Shipments</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>New Shipment
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <input type="text" name="search" class="form-control" placeholder="Shipment # or Store" value="@Model.SearchTerm">
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="Pending" selected="@(Model.StatusFilter == "Pending")">Pending</option>
+                    <option value="In Transit" selected="@(Model.StatusFilter == "In Transit")">In Transit</option>
+                    <option value="Received" selected="@(Model.StatusFilter == "Received")">Received</option>
+                    <option value="Cancelled" selected="@(Model.StatusFilter == "Cancelled")">Cancelled</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="startDate" class="form-control" value="@Model.StartDate?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="endDate" class="form-control" value="@Model.EndDate?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Shipments Table -->
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Shipment #</th>
+                    <th>Store/Shop</th>
+                    <th>Order Date</th>
+                    <th class="text-center">Items</th>
+                    <th class="text-end">Shipping Fee</th>
+                    <th class="text-end">Total Cost</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Shipments.Any())
+                {
+                    @foreach (var shipment in Model.Shipments)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@shipment.ShipmentId" class="fw-bold text-decoration-none">
+                                    @shipment.ShipmentNumber.Substring(0, Math.Min(20, shipment.ShipmentNumber.Length))...
+                                </a>
+                            </td>
+                            <td>@shipment.StoreSource</td>
+                            <td>@shipment.OrderDate.ToString("MMM dd, yyyy")</td>
+                            <td class="text-center">@shipment.TotalItems</td>
+                            <td class="text-end">&#8369;@shipment.TotalShippingFee.ToString("N2")</td>
+                            <td class="text-end"><strong>&#8369;@shipment.TotalCost.ToString("N2")</strong></td>
+                            <td class="text-center">
+                                @{
+                                    var statusClass = shipment.Status switch
+                                    {
+                                        "Pending" => "bg-warning text-dark",
+                                        "In Transit" => "bg-info",
+                                        "Received" => "bg-success",
+                                        "Cancelled" => "bg-secondary",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @statusClass">@shipment.Status</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a asp-action="Details" asp-route-id="@shipment.ShipmentId" class="btn btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    @if (shipment.Status == "Pending" || shipment.Status == "In Transit")
+                                    {
+                                        <a asp-action="Receive" asp-route-id="@shipment.ShipmentId" class="btn btn-outline-success" title="Receive Items">
+                                            <i class="bi bi-box-arrow-in-down"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                            No shipments found
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

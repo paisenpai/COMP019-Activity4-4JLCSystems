@@ -1,0 +1,304 @@
+@model COMP019_Activity4_4JLCSystems.Models.Entities.Cart
+@{
+    ViewData["Title"] = "Shopping Cart";
+    Layout = "_ShopLayout";
+}
+
+<style>
+    .cart-item {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s;
+    }
+    .cart-item:hover {
+        border-color: rgba(231, 76, 60, 0.3);
+    }
+    .product-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.1));
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-red);
+    }
+    .qty-control {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    .qty-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.05);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .qty-btn:hover {
+        background: var(--primary-red);
+        border-color: var(--primary-red);
+    }
+    .qty-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .qty-display {
+        width: 50px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 1rem;
+        background: transparent;
+        border: none;
+        color: white;
+        -moz-appearance: textfield;
+    }
+    .qty-display::-webkit-outer-spin-button,
+    .qty-display::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    .qty-display:focus {
+        outline: none;
+        background: rgba(255,255,255,0.1);
+        border-radius: 4px;
+    }
+    .summary-card {
+        background: #1a1a1a;
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 16px;
+        padding: 1.5rem;
+        position: sticky;
+        top: 100px;
+    }
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+    .summary-total {
+        font-size: 1.5rem;
+        color: #ff6b6b;
+    }
+    .empty-cart {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    .empty-cart-icon {
+        font-size: 5rem;
+        color: rgba(255,255,255,0.2);
+        margin-bottom: 1rem;
+    }
+    .stock-info {
+        font-size: 0.75rem;
+        color: rgba(255,255,255,0.5);
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="bi bi-cart3 me-2" style="color: var(--primary-red);"></i>Shopping Cart</h2>
+    <a href="/shop" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Continue Shopping
+    </a>
+</div>
+
+@if (Model != null && Model.CartItems.Any())
+{
+    <div class="row">
+        <div class="col-lg-8">
+            @foreach (var item in Model.CartItems)
+            {
+                var maxStock = item.Product?.Inventory?.QuantityInStock ?? 0;
+                var currentQty = Math.Min(item.Quantity, maxStock > 0 ? maxStock : item.Quantity);
+                <div class="cart-item" data-item-id="@item.CartItemId" data-price="@item.Product?.SellingPrice" data-max-stock="@maxStock">
+                    <div class="row align-items-center">
+                        <div class="col-md-5">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="product-icon">
+                                    <i class="bi bi-box-seam fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">@item.Product?.ProductName</h6>
+                                    <small class="text-muted">@item.Product?.Brand • @item.Product?.ItemCode</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <small class="text-muted d-block">Price</small>
+                            <span>&#8369;@item.Product?.SellingPrice.ToString("N2")</span>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <small class="text-muted d-block">Qty</small>
+                            <div class="qty-control justify-content-center">
+                                <button type="button" class="qty-btn qty-minus" onclick="updateQty(@item.CartItemId, -1, @maxStock)">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                                <input type="number" class="qty-display" id="qty-@item.CartItemId" value="@currentQty" min="1" max="@maxStock" onchange="setQty(@item.CartItemId, this.value, @maxStock)">
+                                <button type="button" class="qty-btn qty-plus" onclick="updateQty(@item.CartItemId, 1, @maxStock)" @(currentQty >= maxStock ? "disabled" : "")>
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+                            <small class="stock-info">@maxStock in stock</small>
+                        </div>
+                        <div class="col-md-3 text-end">
+                            <small class="text-muted d-block">Subtotal</small>
+                            <span class="fw-bold item-subtotal" id="subtotal-@item.CartItemId" style="color: #ff6b6b;">&#8369;@(((item.Product?.SellingPrice ?? 0) * currentQty).ToString("N2"))</span>
+                            <form method="post" action="/cart/remove" class="d-inline ms-2">
+                                <input type="hidden" name="cartItemId" value="@item.CartItemId">
+                                <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Remove">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="summary-card">
+                <h5 class="mb-4"><i class="bi bi-receipt me-2"></i>Order Summary</h5>
+                
+                @{
+                    var subtotal = Model.CartItems.Sum(ci => (ci.Product?.SellingPrice ?? 0) * Math.Min(ci.Quantity, ci.Product?.Inventory?.QuantityInStock ?? ci.Quantity));
+                    var shipping = 50.00m;
+                    var total = subtotal + shipping;
+                }
+                
+                <div class="summary-row">
+                    <span class="text-muted">Subtotal (<span id="itemCount">@Model.CartItems.Count</span> items)</span>
+                    <span id="cartSubtotal">&#8369;@subtotal.ToString("N2")</span>
+                </div>
+                <div class="summary-row">
+                    <span class="text-muted">Shipping Fee</span>
+                    <span>&#8369;@shipping.ToString("N2")</span>
+                </div>
+                <div class="summary-row pt-3">
+                    <strong>Total</strong>
+                    <span class="summary-total fw-bold" id="cartTotal">&#8369;@total.ToString("N2")</span>
+                </div>
+                
+                <a href="/order" class="btn btn-primary w-100 mt-4 py-3">
+                    <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
+                </a>
+                
+                <form method="post" action="/cart/clear" class="mt-2">
+                    <button type="submit" class="btn btn-outline-danger w-100">
+                        <i class="bi bi-trash me-1"></i>Clear Cart
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <form id="updateForm" method="post" action="/cart/update" style="display:none;">
+        <input type="hidden" name="cartItemId" id="updateCartItemId">
+        <input type="hidden" name="quantity" id="updateQuantity">
+    </form>
+}
+else
+{
+    <div class="empty-cart">
+        <i class="bi bi-cart-x empty-cart-icon"></i>
+        <h4>Your cart is empty</h4>
+        <p class="text-muted mb-4">Looks like you haven't added any items to your cart yet.</p>
+        <a href="/shop" class="btn btn-primary px-4 py-2">
+            <i class="bi bi-shop me-2"></i>Start Shopping
+        </a>
+    </div>
+}
+
+@section Scripts {
+<script>
+    const shippingFee = 50.00;
+    const pesoSign = '\u20B1';
+        
+    function formatCurrency(amount) {
+        return pesoSign + amount.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+        
+        function setQty(cartItemId, value, maxStock) {
+            let newQty = parseInt(value) || 1;
+            if (newQty < 1) newQty = 1;
+            if (newQty > maxStock) newQty = maxStock;
+            
+            const qtyInput = document.getElementById('qty-' + cartItemId);
+            qtyInput.value = newQty;
+            
+            // Update item subtotal
+            const cartItem = document.querySelector(`[data-item-id="${cartItemId}"]`);
+            const price = parseFloat(cartItem.dataset.price);
+            const subtotalEl = document.getElementById('subtotal-' + cartItemId);
+            subtotalEl.textContent = formatCurrency(price * newQty);
+            
+            // Update plus button state
+            const plusBtn = cartItem.querySelector('.qty-plus');
+            plusBtn.disabled = newQty >= maxStock;
+            
+            // Update cart totals
+            updateCartTotals();
+            
+            // Submit form to update server
+            document.getElementById('updateCartItemId').value = cartItemId;
+            document.getElementById('updateQuantity').value = newQty;
+            document.getElementById('updateForm').submit();
+        }
+        
+        function updateQty(cartItemId, change, maxStock) {
+            const qtyInput = document.getElementById('qty-' + cartItemId);
+            let currentQty = parseInt(qtyInput.value) || 1;
+            let newQty = currentQty + change;
+            
+            if (newQty < 1) newQty = 1;
+            if (newQty > maxStock) newQty = maxStock;
+            
+            if (newQty !== currentQty) {
+                // Update display immediately
+                qtyInput.value = newQty;
+                
+                // Update item subtotal
+                const cartItem = document.querySelector(`[data-item-id="${cartItemId}"]`);
+                const price = parseFloat(cartItem.dataset.price);
+                const subtotalEl = document.getElementById('subtotal-' + cartItemId);
+                subtotalEl.textContent = formatCurrency(price * newQty);
+                
+                // Update plus button state
+                const plusBtn = cartItem.querySelector('.qty-plus');
+                plusBtn.disabled = newQty >= maxStock;
+                
+                // Update cart totals
+                updateCartTotals();
+                
+                // Submit form to update server
+                document.getElementById('updateCartItemId').value = cartItemId;
+                document.getElementById('updateQuantity').value = newQty;
+                document.getElementById('updateForm').submit();
+            }
+        }
+        
+        function updateCartTotals() {
+            let subtotal = 0;
+            document.querySelectorAll('.cart-item').forEach(item => {
+                const price = parseFloat(item.dataset.price);
+                const qty = parseInt(document.getElementById('qty-' + item.dataset.itemId).value) || 1;
+                subtotal += price * qty;
+            });
+            
+            document.getElementById('cartSubtotal').textContent = formatCurrency(subtotal);
+            document.getElementById('cartTotal').textContent = formatCurrency(subtotal + shippingFee);
+        }
+    </script>
+}

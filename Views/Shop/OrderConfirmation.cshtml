@@ -1,0 +1,65 @@
+@model COMP019_Activity4_4JLCSystems.Models.Entities.Order
+@{
+    ViewData["Title"] = "Order Confirmation";
+    Layout = "_ShopLayout";
+}
+
+<style>
+    .confirmation-card {
+        background: #1a1a1a;
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 16px;
+        color: white;
+    }
+    .order-number-box {
+        background: rgba(255,255,255,0.05);
+        border-radius: 12px;
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="confirmation-card text-center">
+            <div class="card-body p-5">
+                <div class="mb-4">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h3 class="mb-2 text-white">Order Placed Successfully!</h3>
+                <p class="text-muted mb-4">Thank you for your order.</p>
+                
+                <div class="order-number-box p-4 mb-4 mx-3">
+                    <p class="mb-1 text-muted">Order Number:</p>
+                    <h4 class="mb-3 text-white">@Model.OrderNumber</h4>
+                    <p class="mb-0 small text-muted">Save this number to track your order.</p>
+                </div>
+                
+                <div class="row text-start mb-4 px-3">
+                    <div class="col-6">
+                        <p class="text-muted small mb-1">Customer</p>
+                        <p class="mb-0 text-white">@Model.CustomerName</p>
+                    </div>
+                    <div class="col-6">
+                        <p class="text-muted small mb-1">Total Amount</p>
+                        <p class="mb-0 fw-bold text-white">&#8369;@Model.TotalAmount.ToString("N2")</p>
+                    </div>
+                </div>
+                
+                <hr class="mx-3" style="border-color: rgba(255,255,255,0.1);">
+                
+                <p class="text-muted small mb-4 px-3">
+                    Your order is currently <strong class="text-warning">Pending</strong>. 
+                    You will receive updates on your order status.
+                </p>
+                
+                <div class="d-grid gap-3 px-3">
+                    <a href="/track" class="btn btn-outline-primary">
+                        <i class="bi bi-search me-1"></i>Track Your Order
+                    </a>
+                    <a href="/shop" class="btn btn-primary">
+                        <i class="bi bi-shop me-1"></i>Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

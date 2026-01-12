@@ -1,0 +1,132 @@
+@model COMP019_Activity4_4JLCSystems.Models.ViewModels.ProductListViewModel
+@{
+    ViewData["Title"] = "Products";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-box me-2"></i>Products</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Add Product
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input type="text" name="search" class="form-control" placeholder="Product name, code, or brand..." value="@Model.SearchTerm">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Category</label>
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    @foreach (var cat in Model.AvailableCategories)
+                    {
+                        <option value="@cat" selected="@(Model.CategoryFilter == cat)">@cat</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Stock Status</label>
+                <select name="stockFilter" class="form-select">
+                    <option value="">All</option>
+                    <option value="InStock" selected="@(Model.StockFilter == "InStock")">In Stock</option>
+                    <option value="LowStock" selected="@(Model.StockFilter == "LowStock")">Low Stock</option>
+                    <option value="OutOfStock" selected="@(Model.StockFilter == "OutOfStock")">Out of Stock</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-search me-1"></i>Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Products Grid -->
+<div class="row g-4">
+    @if (Model.Products.Any())
+    {
+        @foreach (var product in Model.Products)
+        {
+            <div class="col-sm-6 col-lg-4 col-xl-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    @if (!string.IsNullOrEmpty(product.ImageUrl))
+                    {
+                        <img src="@product.ImageUrl" class="card-img-top" alt="@product.ProductName" style="height: 150px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                            <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title mb-0">@product.ProductName</h6>
+                            <span class="badge @(product.IsOutOfStock ? "bg-danger" : product.IsLowStock ? "bg-warning" : "bg-success")">
+                                @product.StockStatus
+                            </span>
+                        </div>
+                        <p class="text-muted small mb-2">
+                            <code>@product.ItemCode</code>
+                            @if (!string.IsNullOrEmpty(product.Brand))
+                            {
+                                <span>| @product.Brand</span>
+                            }
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="text-muted small">Cost:</span>
+                                <span class="text-danger">&#8369;@product.CostPrice.ToString("N2")</span>
+                            </div>
+                            <div>
+                                <span class="text-muted small">Sell:</span>
+                                <strong class="text-success">&#8369;@product.SellingPrice.ToString("N2")</strong>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">Stock: @product.QuantityInStock units</small>
+                            <small class="text-success">Profit: &#8369;@product.ProfitMargin.ToString("N2")</small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <div class="btn-group w-100" role="group">
+                            <a asp-action="Details" asp-route-id="@product.ProductId" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@product.ProductId" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
+                                <input type="hidden" name="ProductId" value="@product.ProductId" />
+                                <input type="hidden" name="Quantity" value="1" />
+                                <button type="submit" class="btn btn-outline-success btn-sm" @(product.IsOutOfStock ? "disabled" : "")>
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <h5 class="mt-3">No Products Found</h5>
+                    <p class="text-muted">No products match your search criteria.</p>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>Add Your First Product
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,140 @@
+@model COMP019_Activity4_4JLCSystems.Models.ViewModels.CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+    Layout = "_ShopLayout";
+}
+
+<style>
+    .checkout-card {
+        background: #1a1a1a;
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 16px;
+        color: white;
+    }
+    .checkout-card .card-header {
+        background: #222;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        border-radius: 16px 16px 0 0;
+        padding: 1rem 1.5rem;
+    }
+    .checkout-card .card-body {
+        padding: 1.5rem;
+    }
+    .checkout-table {
+        color: white;
+        margin: 0;
+        background: #1a1a1a;
+        --bs-table-bg: #1a1a1a;
+        --bs-table-color: white;
+    }
+    .checkout-table thead {
+        background: rgba(255,255,255,0.05);
+    }
+    .checkout-table tbody {
+        background: #1a1a1a;
+    }
+    .checkout-table tfoot {
+        background: #1a1a1a;
+    }
+    .checkout-table th, .checkout-table td {
+        border-color: rgba(255,255,255,0.1);
+        padding: 1rem 1.5rem;
+        background: transparent;
+        color: white !important;
+    }
+    .checkout-table tfoot tr {
+        border-color: rgba(255,255,255,0.1);
+    }
+    .total-row {
+        color: white;
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-credit-card me-2" style="color: var(--primary-red);"></i>Checkout</h2>
+            <a href="/cart" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Back to Cart
+            </a>
+        </div>
+        
+        <form method="post" action="/payment">
+            @Html.AntiForgeryToken()
+            <div class="checkout-card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person me-2"></i>Customer Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="CustomerName" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contact Number</label>
+                            <input type="tel" name="ContactNumber" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Shipping Fee</label>
+                            <input type="number" name="ShippingFee" class="form-control" value="@Model.ShippingFee" step="0.01" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Shipping Address</label>
+                            <textarea name="ShippingAddress" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notes (Optional)</label>
+                            <textarea name="Notes" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="checkout-card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-bag me-2"></i>Order Summary</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table checkout-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.CartItems)
+                            {
+                                <tr>
+                                    <td>@item.ProductName</td>
+                                    <td class="text-center">@item.Quantity</td>
+                                    <td class="text-end">&#8369;@((item.UnitPrice * item.Quantity).ToString("N2"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" class="text-end text-muted">Subtotal:</td>
+                                <td class="text-end">&#8369;@Model.Subtotal.ToString("N2")</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="text-end text-muted">Shipping:</td>
+                                <td class="text-end">&#8369;@Model.ShippingFee.ToString("N2")</td>
+                            </tr>
+                            <tr class="fw-bold">
+                                <td colspan="2" class="text-end">Total:</td>
+                                <td class="text-end total-row fs-5">&#8369;@((Model.Subtotal + Model.ShippingFee).ToString("N2"))</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-lg w-100 py-3">
+                <i class="bi bi-check-circle me-2"></i>Place Order
+            </button>
+        </form>
+    </div>
+</div>

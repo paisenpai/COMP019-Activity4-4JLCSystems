@@ -1,0 +1,169 @@
+@model COMP019_Activity4_4JLCSystems.Models.ViewModels.InventoryListViewModel
+@{
+    ViewData["Title"] = "Inventory";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-boxes me-2"></i>Inventory Management</h1>
+    <a asp-controller="Products" asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Add Product
+    </a>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-primary text-white">
+            <div class="card-body text-center">
+                <h4 class="mb-0">@Model.TotalProducts</h4>
+                <small>Total Products</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-success text-white">
+            <div class="card-body text-center">
+                <h4 class="mb-0">@Model.InStockCount</h4>
+                <small>In Stock</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-warning">
+            <div class="card-body text-center">
+                <h4 class="mb-0">@Model.LowStockCount</h4>
+                <small>Low Stock</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-danger text-white">
+            <div class="card-body text-center">
+                <h4 class="mb-0">@Model.OutOfStockCount</h4>
+                <small>Out of Stock</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <span>Total Inventory Value (Selling):</span>
+                    <strong class="text-success">&#8369;@Model.TotalInventoryValue.ToString("N2")</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <span>Total Inventory Cost (Capital):</span>
+                    <strong class="text-danger">&#8369;@Model.TotalInventoryCost.ToString("N2")</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search product name, code, or brand..." value="@Model.SearchTerm">
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    @foreach (var cat in Model.AvailableCategories)
+                    {
+                        <option value="@cat" selected="@(Model.CategoryFilter == cat)">@cat</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="stockFilter" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="InStock" selected="@(Model.StockFilter == "InStock")">In Stock</option>
+                    <option value="LowStock" selected="@(Model.StockFilter == "LowStock")">Low Stock</option>
+                    <option value="OutOfStock" selected="@(Model.StockFilter == "OutOfStock")">Out of Stock</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Inventory Table -->
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Product</th>
+                    <th>Item Code</th>
+                    <th>Category</th>
+                    <th class="text-center">Quantity</th>
+                    <th class="text-end">Cost Price</th>
+                    <th class="text-end">Selling Price</th>
+                    <th class="text-end">Stock Value</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Items.Any())
+                {
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr class="@(item.IsOutOfStock ? "table-danger" : item.IsLowStock ? "table-warning" : "")">
+                            <td>
+                                <strong>@item.ProductName</strong>
+                                @if (!string.IsNullOrEmpty(item.Brand))
+                                {
+                                    <br><small class="text-muted">@item.Brand</small>
+                                }
+                            </td>
+                            <td><code>@item.ItemCode</code></td>
+                            <td>@(item.Category ?? "-")</td>
+                            <td class="text-center">
+                                <strong>@item.QuantityInStock</strong>
+                                <small class="text-muted">/ @item.ReorderLevel</small>
+                            </td>
+                            <td class="text-end">&#8369;@item.CostPrice.ToString("N2")</td>
+                            <td class="text-end">&#8369;@item.SellingPrice.ToString("N2")</td>
+                            <td class="text-end">&#8369;@item.TotalValue.ToString("N2")</td>
+                            <td class="text-center">
+                                <span class="badge @(item.IsOutOfStock ? "bg-danger" : item.IsLowStock ? "bg-warning text-dark" : "bg-success")">
+                                    @item.StockStatus
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="Adjust" asp-route-id="@item.InventoryId" class="btn btn-sm btn-outline-primary" title="Adjust Stock">
+                                    <i class="bi bi-sliders"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                            No inventory items found
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

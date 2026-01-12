@@ -1,0 +1,190 @@
+@model COMP019_Activity4_4JLCSystems.Models.ViewModels.ShipmentDetailsViewModel
+@{
+    ViewData["Title"] = "Shipment Details";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-truck me-2"></i>Shipment Details</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Shipments
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Shipment Items -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Items (@Model.TotalItems total)</h5>
+                <span class="badge fs-6 @(Model.Status == "Pending" ? "bg-warning text-dark" : Model.Status == "In Transit" ? "bg-info" : Model.Status == "Received" ? "bg-success" : "bg-secondary")">
+                    @Model.Status
+                </span>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Unit Cost</th>
+                            <th class="text-end">+ Shipping</th>
+                            <th class="text-end">Final Cost</th>
+                            <th class="text-end">Line Total</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr class="@(item.IsReceived ? "table-success" : "")">
+                                <td>
+                                    <strong>@item.ItemName</strong>
+                                    <br><code>@item.ItemCode</code>
+                                    @if (!string.IsNullOrEmpty(item.Category) || !string.IsNullOrEmpty(item.Brand))
+                                    {
+                                        <br><small class="text-muted">@item.Category @(!string.IsNullOrEmpty(item.Brand) ? $"| {item.Brand}" : "")</small>
+                                    }
+                                </td>
+                                <td class="text-center">@item.Quantity</td>
+                                <td class="text-end">&#8369;@item.UnitCost.ToString("N2")</td>
+                                <td class="text-end text-info">&#8369;@item.AllocatedShippingFee.ToString("N2")</td>
+                                <td class="text-end"><strong>&#8369;@item.FinalUnitCost.ToString("N2")</strong></td>
+                                <td class="text-end">&#8369;@item.LineTotalCost.ToString("N2")</td>
+                                <td class="text-center">
+                                    @if (item.IsReceived)
+                                    {
+                                        <span class="badge bg-success"><i class="bi bi-check"></i> Received</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="5" class="text-end"><strong>Total Item Cost:</strong></td>
+                            <td class="text-end"><strong>&#8369;@Model.TotalItemCost.ToString("N2")</strong></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-end">Total Shipping Fee:</td>
+                            <td class="text-end">&#8369;@Model.TotalShippingFee.ToString("N2")</td>
+                            <td></td>
+                        </tr>
+                        <tr class="table-primary">
+                            <td colspan="5" class="text-end"><strong>Grand Total:</strong></td>
+                            <td class="text-end"><strong class="fs-5">&#8369;@Model.TotalCostWithShipping.ToString("N2")</strong></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Cost Breakdown -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Shipping Fee Allocation</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Shipping fee of <strong>&#8369;@Model.TotalShippingFee.ToString("N2")</strong> is automatically divided across 
+                    <strong>@Model.TotalItems items</strong> = <strong>&#8369;@Model.AllocatedShippingPerItem.ToString("N2")</strong> per item.
+                </div>
+                <p class="text-muted mb-0">
+                    <strong>Final Item Cost = Unit Cost + Allocated Shipping</strong><br>
+                    This final cost should be used as the product's cost price (Puhunan) for accurate profit calculation.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Shipment Info -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Shipment Information</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <td class="text-muted">Shipment #:</td>
+                        <td class="text-end"><code>@Model.ShipmentNumber</code></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Store/Shop:</td>
+                        <td class="text-end">@Model.StoreSource</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Order Date:</td>
+                        <td class="text-end">@Model.OrderDate.ToString("MMM dd, yyyy")</td>
+                    </tr>
+                    @if (Model.ExpectedArrival.HasValue)
+                    {
+                        <tr>
+                            <td class="text-muted">Expected:</td>
+                            <td class="text-end">@Model.ExpectedArrival.Value.ToString("MMM dd, yyyy")</td>
+                        </tr>
+                    }
+                    @if (Model.ReceivedDate.HasValue)
+                    {
+                        <tr>
+                            <td class="text-muted">Received:</td>
+                            <td class="text-end">@Model.ReceivedDate.Value.ToString("MMM dd, yyyy")</td>
+                        </tr>
+                    }
+                </table>
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <hr>
+                    <p class="text-muted small mb-0"><strong>Notes:</strong> @Model.Notes</p>
+                }
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Actions</h6>
+            </div>
+            <div class="card-body">
+                @if (Model.Status == "Pending" || Model.Status == "In Transit")
+                {
+                    <a asp-action="Receive" asp-route-id="@Model.ShipmentId" class="btn btn-success w-100 mb-2">
+                        <i class="bi bi-box-arrow-in-down me-1"></i>Receive Items
+                    </a>
+                    
+                    @if (Model.Status == "Pending")
+                    {
+                        <form asp-action="UpdateStatus" method="post" class="mb-2">
+                            <input type="hidden" name="id" value="@Model.ShipmentId" />
+                            <input type="hidden" name="status" value="In Transit" />
+                            <button type="submit" class="btn btn-info w-100">
+                                <i class="bi bi-truck me-1"></i>Mark In Transit
+                            </button>
+                        </form>
+                    }
+                    
+                    <form asp-action="UpdateStatus" method="post" class="mb-2">
+                        <input type="hidden" name="id" value="@Model.ShipmentId" />
+                        <input type="hidden" name="status" value="Cancelled" />
+                        <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Cancel this shipment?')">
+                            <i class="bi bi-x-lg me-1"></i>Cancel Shipment
+                        </button>
+                    </form>
+                }
+                
+                @if (Model.Status != "Received")
+                {
+                    <a asp-action="Delete" asp-route-id="@Model.ShipmentId" class="btn btn-outline-danger w-100">
+                        <i class="bi bi-trash me-1"></i>Delete Shipment
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,245 @@
+@model COMP019_Activity4_4JLCSystems.Models.ViewModels.CreateShipmentViewModel
+@{
+    ViewData["Title"] = "New Shipment";
+    var products = ViewBag.Products as List<COMP019_Activity4_4JLCSystems.Models.Entities.Product>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-truck me-2"></i>Create New Shipment</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Shipments
+    </a>
+</div>
+
+<form asp-action="Create" method="post" id="shipmentForm">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Shipment Info -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Shipment Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="StoreSource" class="form-label"></label>
+                            <input asp-for="StoreSource" class="form-control" placeholder="e.g., Shopee, Lazada, Supplier Name">
+                            <span asp-validation-for="StoreSource" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="TotalShippingFee" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">&#8369;</span>
+                                <input asp-for="TotalShippingFee" class="form-control" type="number" step="0.01" min="0">
+                            </div>
+                            <small class="text-muted">This will be divided among all items</small>
+                            <span asp-validation-for="TotalShippingFee" class="text-danger d-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="OrderDate" class="form-label"></label>
+                            <input asp-for="OrderDate" class="form-control" type="date">
+                            <span asp-validation-for="OrderDate" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ExpectedArrival" class="form-label"></label>
+                            <input asp-for="ExpectedArrival" class="form-control" type="date">
+                            <span asp-validation-for="ExpectedArrival" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Notes" class="form-label"></label>
+                            <textarea asp-for="Notes" class="form-control" rows="2" placeholder="Additional notes (optional)"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shipment Items -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-box me-2"></i>Shipment Items</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addItem()">
+                        <i class="bi bi-plus-lg me-1"></i>Add Item
+                    </button>
+                </div>
+                <div class="card-body" id="itemsContainer">
+                    <!-- Item rows will be added here -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm position-sticky" style="top: 20px;">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Items:</span>
+                        <span id="totalItems">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Item Cost:</span>
+                        <span id="itemCost">&#8369;0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping Fee:</span>
+                        <span id="shippingFee">&#8369;0.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total Cost:</strong>
+                        <strong id="totalCost" class="text-primary">&#8369;0.00</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <small class="text-muted">Shipping per item:</small>
+                        <small class="text-muted" id="shippingPerItem">&#8369;0.00</small>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-check-lg me-1"></i>Create Shipment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Item Template -->
+<template id="itemTemplate">
+    <div class="item-row border rounded p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Item <span class="item-number">1</span></h6>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Item Name *</label>
+                <input type="text" name="Items[INDEX].ItemName" class="form-control item-name" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Item Code *</label>
+                <input type="text" name="Items[INDEX].ItemCode" class="form-control item-code" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Category</label>
+                <input type="text" name="Items[INDEX].Category" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Brand</label>
+                <input type="text" name="Items[INDEX].Brand" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Link to Product</label>
+                <select name="Items[INDEX].ProductId" class="form-select product-select">
+                    <option value="">-- New Product --</option>
+                    @if (products != null)
+                    {
+                        @foreach (var p in products)
+                        {
+                            <option value="@p.ProductId" data-name="@p.ProductName" data-code="@p.ItemCode">@p.ProductName (@p.ItemCode)</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Unit Cost (Puhunan) *</label>
+                <div class="input-group">
+                    <span class="input-group-text">&#8369;</span>
+                    <input type="number" name="Items[INDEX].UnitCost" class="form-control item-cost" step="0.01" min="0.01" required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Quantity *</label>
+                <input type="number" name="Items[INDEX].Quantity" class="form-control item-qty" min="1" value="1" required>
+            </div>
+        </div>
+    </div>
+</template>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        let itemIndex = 0;
+        
+        function addItem() {
+            const template = document.getElementById('itemTemplate');
+            const container = document.getElementById('itemsContainer');
+            const clone = template.content.cloneNode(true);
+            
+            // Update indices
+            const html = clone.querySelector('.item-row').outerHTML.replace(/INDEX/g, itemIndex);
+            container.insertAdjacentHTML('beforeend', html);
+            
+            // Update item number display
+            const rows = container.querySelectorAll('.item-row');
+            rows.forEach((row, i) => {
+                row.querySelector('.item-number').textContent = i + 1;
+            });
+            
+            // Add event listeners to new inputs
+            const lastRow = container.lastElementChild;
+            lastRow.querySelectorAll('.item-cost, .item-qty').forEach(input => {
+                input.addEventListener('input', updateSummary);
+            });
+            
+            // Handle product select autofill
+            lastRow.querySelector('.product-select').addEventListener('change', function() {
+                const selected = this.options[this.selectedIndex];
+                if (selected.value) {
+                    const row = this.closest('.item-row');
+                    row.querySelector('.item-name').value = selected.dataset.name;
+                    row.querySelector('.item-code').value = selected.dataset.code;
+                }
+            });
+            
+            itemIndex++;
+            updateSummary();
+        }
+        
+        function removeItem(btn) {
+            const row = btn.closest('.item-row');
+            row.remove();
+            
+            // Renumber items
+            const rows = document.querySelectorAll('.item-row');
+            rows.forEach((row, i) => {
+                row.querySelector('.item-number').textContent = i + 1;
+            });
+            
+            updateSummary();
+        }
+        
+        function updateSummary() {
+            let totalItems = 0;
+            let totalItemCost = 0;
+            
+            document.querySelectorAll('.item-row').forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const cost = parseFloat(row.querySelector('.item-cost').value) || 0;
+                totalItems += qty;
+                totalItemCost += qty * cost;
+            });
+            
+            const shippingFee = parseFloat(document.querySelector('[name="TotalShippingFee"]').value) || 0;
+            const totalCost = totalItemCost + shippingFee;
+            const shippingPerItem = totalItems > 0 ? shippingFee / totalItems : 0;
+            
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('itemCost').textContent = '?' + totalItemCost.toFixed(2);
+            document.getElementById('shippingFee').textContent = '?' + shippingFee.toFixed(2);
+            document.getElementById('totalCost').textContent = '?' + totalCost.toFixed(2);
+            document.getElementById('shippingPerItem').textContent = '?' + shippingPerItem.toFixed(2);
+        }
+        
+        // Initialize with one item
+        document.addEventListener('DOMContentLoaded', function() {
+            addItem();
+            document.querySelector('[name="TotalShippingFee"]').addEventListener('input', updateSummary);
+        });
+    </script>
+}

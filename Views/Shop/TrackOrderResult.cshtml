@@ -1,0 +1,202 @@
+@model COMP019_Activity4_4JLCSystems.Models.Entities.Order
+@{
+    ViewData["Title"] = "Order Status";
+    Layout = "_ShopLayout";
+}
+
+<style>
+    .dark-card {
+        background: #1a1a1a;
+        border: 1px solid rgba(255,255,255,0.15);
+        color: white;
+        border-radius: 12px;
+    }
+    .dark-card .card-header {
+        background: #222;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px 12px 0 0;
+    }
+    .dark-card .card-body {
+        padding: 1.5rem;
+    }
+    .dark-card .table {
+        color: white;
+        margin: 0;
+        background: #1a1a1a;
+        --bs-table-bg: #1a1a1a;
+        --bs-table-color: white;
+    }
+    .dark-card .table thead {
+        background: rgba(255,255,255,0.05);
+    }
+    .dark-card .table tbody {
+        background: #1a1a1a;
+    }
+    .dark-card .table tfoot {
+        background: #1a1a1a;
+    }
+    .dark-card .table th,
+    .dark-card .table td {
+        border-color: rgba(255,255,255,0.1);
+        padding: 1rem 1.5rem;
+        background: transparent;
+        color: white !important;
+    }
+    .progress-container {
+        position: relative;
+    }
+    .progress-line {
+        position: absolute;
+        top: 20px;
+        left: 10%;
+        right: 10%;
+        height: 3px;
+        background: #6c757d;
+        z-index: 0;
+    }
+    .progress-line-active {
+        position: absolute;
+        top: 20px;
+        left: 10%;
+        height: 3px;
+        background: #198754;
+        z-index: 0;
+        transition: width 0.3s ease;
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-receipt me-2"></i>Order Details</h2>
+            <a href="/track" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Track Another Order
+            </a>
+        </div>
+        
+        <div class="card dark-card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-1 text-white">@Model.OrderNumber</h5>
+                        <p class="text-muted mb-0">Placed on @Model.OrderDate.ToString("MMMM dd, yyyy")</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        @{
+                            var statusClass = Model.OrderStatus switch
+                            {
+                                "Pending" => "bg-warning text-dark",
+                                "Paid" => "bg-info",
+                                "Shipped" => "bg-primary",
+                                "Delivered" => "bg-success",
+                                _ => "bg-secondary"
+                            };
+                        }
+                    <span class="badge @statusClass fs-6 px-3 py-2">@Model.OrderStatus</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Progress -->
+        <div class="card dark-card mb-4">
+            <div class="card-body">
+                <div class="progress-container">
+                    @{
+                        var statuses = new[] { "Pending", "Paid", "Shipped", "Delivered" };
+                        var currentIndex = Array.IndexOf(statuses, Model.OrderStatus);
+                        var progressWidth = currentIndex >= 0 ? (currentIndex * 100 / 3) : 0;
+                    }
+                    <div class="progress-line"></div>
+                    <div class="progress-line-active" style="width: @(progressWidth)%;"></div>
+                    <div class="d-flex justify-content-between">
+                        @for (int i = 0; i < statuses.Length; i++)
+                        {
+                            var isActive = i <= currentIndex;
+                            <div class="text-center" style="z-index: 1;">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2 @(isActive ? "bg-success text-white" : "bg-secondary text-white")" style="width: 40px; height: 40px;">
+                                    @if (i <= currentIndex)
+                                    {
+                                        <i class="bi bi-check"></i>
+                                    }
+                                    else
+                                    {
+                                        <span>@(i + 1)</span>
+                                    }
+                                </div>
+                                <small class="@(isActive ? "fw-bold text-white" : "text-muted")">@statuses[i]</small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Order Items -->
+        <div class="card dark-card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Order Items</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-end">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderItems)
+                        {
+                            <tr>
+                                <td>@item.ProductName</td>
+                                <td class="text-center">@item.Quantity</td>
+                                <td class="text-end">&#8369;@((item.UnitPrice * item.Quantity).ToString("N2"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" class="text-end text-muted">Subtotal:</td>
+                            <td class="text-end">&#8369;@Model.Subtotal.ToString("N2")</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-end text-muted">Shipping:</td>
+                            <td class="text-end">&#8369;@Model.ShippingFee.ToString("N2")</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td colspan="2" class="text-end">Total:</td>
+                            <td class="text-end text-white">&#8369;@Model.TotalAmount.ToString("N2")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Shipping Info -->
+        <div class="card dark-card">
+            <div class="card-header">
+                <h5 class="mb-0">Shipping Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="text-muted small mb-1">Customer</p>
+                        <p class="text-white">@Model.CustomerName</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-muted small mb-1">Contact</p>
+                        <p class="text-white">@Model.ContactNumber</p>
+                    </div>
+                    <div class="col-12">
+                        <p class="text-muted small mb-1">Address</p>
+                        <p class="mb-0 text-white">@Model.ShippingAddress</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

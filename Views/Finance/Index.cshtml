@@ -1,0 +1,227 @@
+@model COMP019_Activity4_4JLCSystems.Models.ViewModels.CashFlowSummaryViewModel
+@{
+    ViewData["Title"] = "Cash Flow";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2"><i class="bi bi-cash-stack me-2"></i>Cash Flow</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Add Transaction
+    </a>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm bg-primary text-white h-100">
+            <div class="card-body">
+                <h6 class="text-white-50">Total Inventory Value</h6>
+                <h3 class="mb-1">&#8369;@Model.TotalInventoryValue.ToString("N2")</h3>
+                <small class="text-white-50">Capital: &#8369;@Model.TotalInventoryCost.ToString("N2")</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm bg-warning h-100">
+            <div class="card-body">
+                <h6>Pending Payments</h6>
+                <h3 class="mb-1">&#8369;@Model.PendingPayments.ToString("N2")</h3>
+                <small>@Model.PendingOrderCount pending orders</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm bg-success text-white h-100">
+            <div class="card-body">
+                <h6 class="text-white-50">Money In (Sales)</h6>
+                <h3 class="mb-1">&#8369;@Model.TotalMoneyIn.ToString("N2")</h3>
+                <small class="text-white-50">Total income received</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm bg-danger text-white h-100">
+            <div class="card-body">
+                <h6 class="text-white-50">Money Out</h6>
+                <h3 class="mb-1">&#8369;@Model.TotalMoneyOut.ToString("N2")</h3>
+                <small class="text-white-50">Total expenses</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Net Cash Flow -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm @(Model.NetCashFlow >= 0 ? "bg-success" : "bg-danger") text-white">
+            <div class="card-body text-center py-4">
+                <h5 class="mb-1">Net Cash Flow</h5>
+                <h2 class="display-4 mb-0">&#8369;@Model.NetCashFlow.ToString("N2")</h2>
+                <small>Money In - Money Out</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Breakdown -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-success"><i class="bi bi-arrow-down-circle me-2"></i>Income Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Sales Revenue:</span>
+                    <span class="text-success">&#8369;@Model.SalesIncome.ToString("N2")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Other Income:</span>
+                    <span class="text-success">&#8369;@Model.OtherIncome.ToString("N2")</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <strong>Total Income:</strong>
+                    <strong class="text-success">&#8369;@Model.TotalMoneyIn.ToString("N2")</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-danger"><i class="bi bi-arrow-up-circle me-2"></i>Expense Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Logistics:</span>
+                    <span class="text-danger">&#8369;@Model.LogisticsExpense.ToString("N2")</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Shipping:</span>
+                    <span class="text-danger">&#8369;@Model.ShippingExpense.ToString("N2")</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Purchases:</span>
+                    <span class="text-danger">&#8369;@Model.PurchaseExpense.ToString("N2")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Other:</span>
+                    <span class="text-danger">&#8369;@Model.OtherExpense.ToString("N2")</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <strong>Total Expenses:</strong>
+                    <strong class="text-danger">&#8369;@Model.TotalMoneyOut.ToString("N2")</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-2">
+                <select name="type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="Income" selected="@(Model.TransactionType == "Income")">Income</option>
+                    <option value="Expense" selected="@(Model.TransactionType == "Expense")">Expense</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    <option value="Sales" selected="@(Model.Category == "Sales")">Sales</option>
+                    <option value="Logistics" selected="@(Model.Category == "Logistics")">Logistics</option>
+                    <option value="Shipping" selected="@(Model.Category == "Shipping")">Shipping</option>
+                    <option value="Purchase" selected="@(Model.Category == "Purchase")">Purchase</option>
+                    <option value="Other" selected="@(Model.Category == "Other")">Other</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="startDate" class="form-control" value="@Model.StartDate?.ToString("yyyy-MM-dd")" placeholder="Start Date">
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="endDate" class="form-control" value="@Model.EndDate?.ToString("yyyy-MM-dd")" placeholder="End Date">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Recent Transactions</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Reference</th>
+                    <th class="text-end">Amount</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.RecentTransactions.Any())
+                {
+                    foreach (var cf in Model.RecentTransactions)
+                    {
+                        <tr>
+                            <td>@cf.TransactionDate.ToString("MMM dd, yyyy")</td>
+                            <td>
+                                <span class="badge @(cf.IsIncome ? "bg-success" : "bg-danger")">
+                                    @cf.TransactionType
+                                </span>
+                            </td>
+                            <td>@cf.Category</td>
+                            <td>
+                                @cf.Description
+                                @if (cf.OrderId.HasValue)
+                                {
+                                    <br><small><a asp-controller="Orders" asp-action="Details" asp-route-id="@cf.OrderId">View Order</a></small>
+                                }
+                                @if (cf.ShipmentId.HasValue)
+                                {
+                                    <br><small><a asp-controller="Shipments" asp-action="Details" asp-route-id="@cf.ShipmentId">View Shipment</a></small>
+                                }
+                            </td>
+                            <td><code>@(cf.ReferenceNumber ?? "-")</code></td>
+                            <td class="text-end">
+                                <span class="@(cf.IsIncome ? "text-success" : "text-danger")">
+                                    @(cf.IsIncome ? "+" : "-")&#8369;@cf.Amount.ToString("N2")
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="Details" asp-route-id="@cf.CashFlowId" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                            No transactions found
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
